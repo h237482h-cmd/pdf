@@ -1,0 +1,40 @@
+name: 打包 Windows EXE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: 下載程式碼
+        uses: actions/checkout@v4
+
+      - name: 安裝 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安裝套件
+        run: pip install pdfplumber pypdf openpyxl pyinstaller
+
+      - name: 打包成 EXE
+        run: |
+          pyinstaller --onefile --noconsole `
+            --name "PDF公文資訊擷取工具" `
+            --hidden-import pdfplumber `
+            --hidden-import pypdf `
+            --hidden-import openpyxl `
+            --collect-all pdfplumber `
+            --collect-all pypdf `
+            --collect-all openpyxl `
+            pdf_extractor_gui.py
+
+      - name: 上傳 EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDF公文資訊擷取工具
+          path: dist/PDF公文資訊擷取工具.exe
